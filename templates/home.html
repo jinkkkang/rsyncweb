@@ -1,0 +1,149 @@
+<html>
+<head>
+  <title>测试同步线上</title>
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="stylesheet" href="static/css.txt">
+  <script src="static/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css"  crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"  crossorigin="anonymous">
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"  crossorigin="anonymous"></script>
+<script type="text/javascript">
+
+function show(){
+  alert("hello")
+}
+
+ $(document).ready(function(){
+  $("#trans").click(function(){
+  $("#content").val($("#content").val().replace(/\\/g,"/"));
+  });
+  
+ function checkdata(cont){ 
+     var x = 0;
+     if(cont ==""){
+     showinfo("信息提示","请在输入空中填写你要提交的文件路径");
+      x=1;
+    }
+    cont.split("\n").map(function(data){
+      patten = /^\//;
+
+     if(!patten.test(data)){ 
+     showinfo("填写错误", "你填写的路径" +  "\n" + "<h2>" + data +"</h2>" + "\n" + "文件路径最前面要写上斜杠 /");
+     x=2;
+     }
+     if(data.indexOf(" ") != -1){
+      showinfo("填写错误","你填写的路径" +  "\n" + "<h2>" + data +"</h2>" + "\n" + "里面有空格");
+      x=3;
+     }
+    if(data.indexOf("\\") != -1){
+     showinfo("填写错误","你填写的路径" +  "\n" + "<h2>" + data +"</h2>" + "\n" + "里面有反斜杠\\,应该是正斜杠/");
+     x=4;
+    }
+    });
+    return x;
+
+ }
+
+
+  $("#tijiao").click(function(){
+    var value = $("#content").val();
+    if(checkdata(value) == 0){
+    $.post('rsync',{
+         content: value,
+         pro: $('input:radio:checked').val()
+    },function(data,status){
+      var html="";
+      var retrval={
+        0: "同步成功",
+        1: "同步失败",
+        2: "文件不存在"
+      }
+      var style={
+        0: "color:green",
+        1: "color:red",
+        2: "color:red"
+      }
+      for (x in data){
+       html += x + "  "  + "<p style="+ style[data[x]] +">" + retrval[data[x]] + "</p>"  + "<br>"
+      }
+      showinfo("同步结束",html);
+    }).error(function(){
+   
+   })
+    }
+  })
+
+  function showinfo(title,info){
+    $("#title").html(title);
+    $("#info").html(info);
+    $("#infoshow").modal("show");
+  }
+    
+
+});
+</script>
+</head>
+<body>
+<div>
+  <h1 style="text-align: center">大明宫||盛世商贸||国际美联</h1>
+  <form action="/rsync" method="post" class="container" style="text-align: center">
+    <textarea name="content" id="content" required="true" class="form-control" rows="10"></textarea>
+<div class="radio" id="project">
+<label class="radio-inline">
+  <input type="radio" name="inlineRadioOptions" id="inlineRadio1" checked="true" value="dmg"> 大明宫
+</label>
+<label class="radio-inline">
+  <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="sssm">盛世商贸
+</label>
+<label class="radio-inline">
+  <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="gjml">国际美联
+</label>
+</div>
+      <button type="button" id="trans"  class="btn-lg btn-default">格式转换</button>
+      <button type="button" id="tijiao"  class="btn-lg btn-default">提交同步</button>
+    </input>
+</form>
+<div class="panel panel-default" style="text-align: center">
+  <div class="panel-body">
+    使用帮助
+  </div>
+  <div class="well" >
+  <p style="color: red">将windows中的文件路径复制到输入框中，点击"格式转换按钮"，然后将前面不是项目路径的删掉
+  或者直接从项目根目录写起。写完文件的整个路径。如果是同步整个目录的话,以斜杠 "/" 结尾
+  </p>
+  文本框中输入需要提交的文件的路径，一些常用的路径，供大家复制
+  <br>
+  /phpcms/templates/default/member/xx.html
+    <br>
+  /phpcms/modules/member/yy.php
+    <br>
+  /phpcms/templates/default/home_page
+    <br>
+  /phpcms/templates/default/wap_index/
+  <br>
+  </div>
+  <h1 style="color: red">{{ message }}</h1>
+</div>
+
+
+<div class="modal fade" id="infoshow" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="title"></h4>
+      </div>
+      <div class="modal-body">
+        <p id="info"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+</div>
+</body>
+
+</html>
